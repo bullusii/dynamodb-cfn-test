@@ -15,10 +15,10 @@ aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
 
 4. Run Command to covert to global table
 ``
-##This step will take around 5-10 minutes - you will see the table in Status Updating
-## Then if you open GlobalTables Tab you will se us-east-2 creating
-## Shows creating in replicas / but shows active un us-east-2
-## 5:38 Start -- 5:55 End (17Mins)
+#This step will take around 5-10 minutes - you will see the table in Status Updating
+#Then if you open GlobalTables Tab you will se us-east-2 creating
+#Shows creating in replicas / but shows active un us-east-2
+#5:38 Start -- 5:55 End (17Mins)
 aws dynamodb update-table --table-name cfnTestPrices --cli-input-json file://./seed/global_update.json
 ``
 
@@ -30,15 +30,15 @@ aws dynamodb update-table --table-name cfnTestPrices --cli-input-json file://./s
 
 7. Ensure table is not modified
 ``
-## Ensure that a replica table exists in us-east-2
+#Ensure that a replica table exists in us-east-2
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
 ``
 
-7. Modify WCU in new CFN and deploy
+8. Modify WCU in new CFN and deploy
 ``aws cloudformation deploy --template-file cloudformation-global-tables-wcu.yaml --stack-name cfn-demo-dynamodb``
 
-8. Ensure that table is not deleted
+9. Ensure that table is not deleted
 ``
-## Check in console wcu is 10 now
+#Check in console wcu is 10 now
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
 ``

@@ -1,0 +1,7 @@
+{
+  "ReplicaUpdates": [
+    {
+      "Create": { "RegionName": "us-east-2" }
+    }
+  ]
+}

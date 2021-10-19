@@ -8,24 +8,24 @@ It assumes you have the permissions to run these commands
 ``aws cloudformation deploy --template-file cloudformation-1-initial.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM``
 
 2. Seed Data - This script will create a random number of items for the cfnTestPrices Table
-``
+```
 ## will require ruby todo
 ./seed/seed_table.sh
-``
+```
 
 3. Get Initial Count of Table:
-``
+```
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
-``
+```
 
 4. Modify and deploy new CFN (cloudformation-2-deletionPolicy.yaml)
 This step we are adding a DeletionPolicy Retain to all resources - We are also adding a tag to the dynamodb table.
 DeletionPolicy changes are not recognized as changes unless there is some other change - this is why we are adding a tag.
 We create a change set - view it - then execute if it looks good
 
-``
+```
 aws cloudformation create-change-set --template-body file://./cloudformation-2-deletionPolicy.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM --change-set-name create-retain
-``
+```
 
 This may take a 5-10 mins to complete
 
@@ -36,22 +36,22 @@ In the console under the cloudformation stack change sets tab for create-retain-
 Execute Change Set < rollback all
 
 Confirm we still have all of our data by running:
-``
+```
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
-``
+```
 
 6.  Remove table and scaling policies from cfn (cloudformation-3-removingTable.yaml)
 
 This step - we are going to remove the table / targets / scaling policies - leaving behind the scaling role / scaling role policy
 This is the scary step - but if we've verified retain - we should be good to go. We are going to import the table back into cfn into the same template in the next step.
-``
+```
 aws cloudformation deploy --template-file cloudformation-3-removingTable.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM
-``
+```
 
 Ensure we still have all the records
-``
+```
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT"
-``
+```
 
 7. This step we are going to import the dynmodb:table as a dynamodb:GlobalTable
 We are limiting this step just to the import of the table
@@ -86,26 +86,26 @@ aws cloudformation create-change-set \
 **This may need review - probably a better way
 
 De-register target:
-``
+```
 aws application-autoscaling deregister-scalable-target --service-namespace dynamodb --resource-id table/cfnTestPrices --scalable-dimension dynamodb:table:WriteCapacityUnits
-``
+```
 
 Execute CFN to create new scaling target / policies
 This is important that these scaling policies will be the same for both tables.
 Modifying this AFTER you create the replica will only effect the original table - not the replica
 You will have to update the replica with CLI commands for scaling (Currently)
 
-``
+```
 aws cloudformation deploy --template-file cloudformation-5-recreate-scaling.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM
-``
+```
 
 You can verify this in the console in the additional settings tab
 You may have to do this for autoscaled reads as well in the real world
 
 9. Add a replica in the region of your choice
-``
+```
 aws cloudformation create-change-set --template-body file://./cloudformation-6-create-replica.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM --change-set-name add-replica
-``
+```
 
 Review and execute change set
 
@@ -113,16 +113,16 @@ look in console to see if a replica exists
 switch to other region (us-east-2) - verify there is a replica
 
 verify item count:
-``
+```
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT" --region us-east-1
 aws dynamodb scan --table-name cfnTestPrices --select "COUNT" --region us-east-2
-``
+```
 
 10. Clean Up
 This step removes the deletion policy to allow you to delete the resources:
-``
+```
 aws cloudformation deploy --template-file cloudformation-7-clean-up.yaml --stack-name cfn-demo-dynamodb --capabilities CAPABILITY_NAMED_IAM
-``
+```
 
 - Delete the stack **ADD COMMAND
 - Manually delete the dynamodb in us-east-2 **ADD CLI COMMAND

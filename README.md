@@ -74,8 +74,8 @@ aws cloudformation create-change-set \
 **This may need review - probably a better way
 
 De-register target:
-```aws application-autoscaling deregister-scalable-target --service-namespace dynamodb --resource-id table/cfnTestPrices --scalable-dimension dynamodb:table:WriteCapacityUnits``
-```
+``aws application-autoscaling deregister-scalable-target --service-namespace dynamodb --resource-id table/cfnTestPrices --scalable-dimension dynamodb:table:WriteCapacityUnits``
+``
 Execute CFN to create new scaling target / policies
 This is important that these scaling policies will be the same for both tables.
 Modifying this AFTER you create the replica will only effect the original table - not the replica

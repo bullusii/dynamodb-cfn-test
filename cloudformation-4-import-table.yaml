@@ -1,0 +1,72 @@
+## USAGE: ORDER (4)
+## Purpose:
+## This cfn pulls the table back and now as a global table
+## There are some attributes changed to ensure it is compatable
+## Changes:
+## - ADDED BillingMode: "PAY_PER_REQUEST"
+## - REMOVED ProvisionedThroughput - not supported
+## - REMOVED Tags - not supported
+
+
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SAM Dynamo Test
+Resources:
+  cfnTestPrices:
+    Type: AWS::DynamoDB::GlobalTable
+    DeletionPolicy: Retain
+    Properties:
+      TableName: cfnTestPrices
+      BillingMode: "PAY_PER_REQUEST"
+      Replicas:
+        - Region: us-east-1
+      AttributeDefinitions:
+      - AttributeName: priceId
+        AttributeType: S
+      - AttributeName: date
+        AttributeType: S
+      KeySchema:
+      - AttributeName: priceId
+        KeyType: HASH
+      - AttributeName: date
+        KeyType: RANGE
+      StreamSpecification:
+            StreamViewType: "NEW_AND_OLD_IMAGES"
+
+  ScalingRole:
+    Type: AWS::IAM::Role
+    DeletionPolicy: Retain
+    Properties:
+      RoleName: ScalingRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - application-autoscaling.amazonaws.com
+          Action:
+            - sts:AssumeRole
+
+  ScalingRolePolicy:
+    Type: AWS::IAM::Policy
+    DeletionPolicy: Retain
+    Properties:
+      Roles:
+        - !Ref ScalingRole
+      PolicyName: ScalingRolePolicyPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - application-autoscaling:*
+              - dynamodb:DescribeTable
+              - dynamodb:UpdateTable
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:SetAlarmState
+              - cloudwatch:DeleteAlarms
+            Resource: '*'

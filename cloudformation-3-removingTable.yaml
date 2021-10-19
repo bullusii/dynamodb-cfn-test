@@ -1,0 +1,48 @@
+## USAGE: ORDER (3)
+## Purpose:
+## This CFN is removing the dynamodb table / scaling target / and scaling policy so we can import this as a global table later
+## Changes:
+## - Removed dynamodb:Table
+## - Removed scaling taret
+## - Removed Scaling Policy
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SAM Dynamo Test
+Resources:
+  ScalingRole:
+    Type: AWS::IAM::Role
+    DeletionPolicy: Retain
+    Properties:
+      RoleName: ScalingRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - application-autoscaling.amazonaws.com
+          Action:
+            - sts:AssumeRole
+
+  ScalingRolePolicy:
+    Type: AWS::IAM::Policy
+    DeletionPolicy: Retain
+    Properties:
+      Roles:
+        - !Ref ScalingRole
+      PolicyName: ScalingRolePolicyPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - application-autoscaling:*
+              - dynamodb:DescribeTable
+              - dynamodb:UpdateTable
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:SetAlarmState
+              - cloudwatch:DeleteAlarms
+            Resource: '*'

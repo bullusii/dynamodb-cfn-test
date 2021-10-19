@@ -1,3 +1,7 @@
+## USAGE: ORDER (1)
+## This CFN creates an initial dynamodb table that has autoscaling enabled for their writes (there are no GSIs here)
+
+
 AWSTemplateFormatVersion: '2010-09-09'
 Description: SAM Dynamo Test
 Resources:
@@ -23,7 +27,7 @@ Resources:
       Type: AWS::ApplicationAutoScaling::ScalableTarget
       Properties:
           MaxCapacity: 100
-          MinCapacity: 10
+          MinCapacity: 5
           ResourceId: table/cfnTestPrices
           RoleARN: !GetAtt ScalingRole.Arn
           ScalableDimension: dynamodb:table:WriteCapacityUnits

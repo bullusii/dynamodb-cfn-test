@@ -1,13 +1,25 @@
+## USAGE: ORDER (5)
+## Purpose:
+## This cfn adds new scalign policies to the table after we deregistered the old ones
+## This policy will be mimiced for replicas
+## Changes:
+## - Added TableWriteCapacityScalableTarget
+## - Added TableWriteScalingPolicy
+
+
+
+
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Import Changed Table
+Description: SAM Dynamo Test
 Resources:
   cfnTestPrices:
     Type: AWS::DynamoDB::GlobalTable
     DeletionPolicy: Retain
     Properties:
       TableName: cfnTestPrices
+      BillingMode: "PAY_PER_REQUEST"
       Replicas:
-        - us-east-2
+        - Region: us-east-1
       AttributeDefinitions:
       - AttributeName: priceId
         AttributeType: S
@@ -18,16 +30,14 @@ Resources:
         KeyType: HASH
       - AttributeName: date
         KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      StreamSpecification:
+            StreamViewType: "NEW_AND_OLD_IMAGES"
 
   TableWriteCapacityScalableTarget:
       Type: AWS::ApplicationAutoScaling::ScalableTarget
-      DeletionPolicy: Retain
       Properties:
-          MaxCapacity: 100
-          MinCapacity: 10
+          MaxCapacity: 1000
+          MinCapacity: 20
           ResourceId: table/cfnTestPrices
           RoleARN: !GetAtt ScalingRole.Arn
           ScalableDimension: dynamodb:table:WriteCapacityUnits
@@ -35,17 +45,16 @@ Resources:
 
   TableWriteScalingPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    DeletionPolicy: Retain
     Properties:
         PolicyName: TableWriteScalingPolicy
         PolicyType: TargetTrackingScaling
         ScalingTargetId: !Ref TableWriteCapacityScalableTarget
         TargetTrackingScalingPolicyConfiguration:
-            TargetValue: 70
-            ScaleInCooldown: 60
-            ScaleOutCooldown: 60
-            PredefinedMetricSpecification:
-                PredefinedMetricType: DynamoDBWriteCapacityUtilization
+          TargetValue: 75
+          ScaleInCooldown: 55
+          ScaleOutCooldown: 55
+          PredefinedMetricSpecification:
+              PredefinedMetricType: DynamoDBWriteCapacityUtilization
 
   ScalingRole:
     Type: AWS::IAM::Role
